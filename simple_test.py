@@ -338,3 +338,7 @@ n = int(n)
 print(n+1)
 
 print(floor(20139 / 20))
+
+import codecs
+with codecs.open("raw.txt", "w", "utf-8") as targetFile:
+    targetFile.write(test_specific)
