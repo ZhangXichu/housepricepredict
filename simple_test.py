@@ -1,5 +1,7 @@
 import re
 from math import floor
+from scrapper import remove_spaces
+import parser as pr
 
 test_apartment_info = '''Česky
 Osobní menu
@@ -325,20 +327,28 @@ Občanská vybavenost
 -+
 Změnit mapu
 '''
+from urllib.parse import urlparse
+import os
 
-n = re.search(r'Zobrazujeme výsledky 1–20 z celkem (.*?) nalezených', test_apartment_info).group(1)
-print(n)
+if __name__ == '__main__':
+    # address = "https://www.sreality.cz/detail/prodej/byt/4+kk/praha-stodulky-melodicka/3513623884"
+    # o = urlparse(address)
+    # print(o.path)
+    # id_num = os.path.split(o.path)[1]
+    # print(id_num)
 
-def remove(string):
-    return string.replace(" ", "")
+    print(pr.get_overall_price(test_specific))
+    print(pr.get_usable_area(test_specific))
+    print(pr.get_apartment_type(test_specific))
+    print(pr.get_floor(test_specific))
+    print(pr.get_building_state(test_specific))
+    print(pr.get_ownership(test_specific))
 
-n = remove(n)
-n = int(n)
+    print(pr.check_loggia(test_specific))
+    print(pr.get_loggia_area(test_specific))
 
-print(n+1)
+    print(pr.check_basement(test_specific))
+    print(pr.get_basement_area(test_specific))
 
-print(floor(20139 / 20))
+    print(pr.dist_pub(test_specific))
 
-import codecs
-with codecs.open("raw.txt", "w", "utf-8") as targetFile:
-    targetFile.write(test_specific)

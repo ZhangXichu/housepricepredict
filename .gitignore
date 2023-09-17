@@ -1,0 +1,12 @@
+# text files with data
+
+
+*.txt
+
+simple_test.py
+
+playground.ipynb
+
+.idea
+.ipynb_checkpoints
+__pycache__
