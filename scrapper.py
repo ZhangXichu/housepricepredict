@@ -1,3 +1,5 @@
+import urllib.request
+
 from requests_html import HTMLSession
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -12,6 +14,7 @@ import codecs
 from urllib.parse import urlparse
 import os
 import time
+import estates
 
 
 def remove_spaces(string):
@@ -19,10 +22,32 @@ def remove_spaces(string):
 
 
 def get_id_from_url(address):
+    """
+    function acquires the id of an a
+    :param address:
+    :return: string
+    """
     o = urlparse(address)
     return os.path.split(o.path)[1]
 
-# TODO: crate functions for parsing the data in a saparate file
+
+def get_coord_from_url(address, coord='x'):
+    """
+    function gets the x or y coordinate from a url
+    :return: float
+    """
+    if coord == 'x':
+        pattern = r'.*?x=(.*)&y='
+    else:
+        pattern = r'.*&y=(.*)&z='
+    try:
+        pattern_finder = re.search(pattern, address)
+        c = pattern_finder.group(1)
+        res = float(c)
+        return res
+    except AttributeError:
+        print("No coordinte info found")
+        return None
 
 
 def get_all_ids(url_sub, driver, page_num):
@@ -77,6 +102,12 @@ def get_all_ids(url_sub, driver, page_num):
 
 
 def load_raw_data(driver):
+    """
+    function downloads html documents and images of each ad of
+    a real estate
+    :param driver:
+    :return:
+    """
     out_file_name = "raw.txt"
 
     try:
@@ -86,23 +117,58 @@ def load_raw_data(driver):
 
     file = open('raw_lst.txt', 'r')
 
-    with codecs.open(out_file_name, "a", "utf-8") as targetFile:
-        while True:
-            ad_link = file.readline().strip()
-            if not ad_link:
-                break
+    counter = 0
+    while counter <= 30:
+        ad_link = file.readline().strip()
+        if not ad_link:
+            break
 
-            print("link: " + ad_link)
+        ad_id = get_id_from_url(ad_link)
+        print("ad_id: " + ad_id)
 
-            # get all the links on a page
-            driver.get(ad_link)
+        # get all the links on a page
+        driver.get(ad_link)
+        img_results = driver.find_elements(By.XPATH, "//img[contains(@src, 'sreality.png')]")
 
-            apartment_info = driver.find_element(By.XPATH, "/html/body").text
+        map_results = driver.find_elements(By.XPATH, "//a[contains(@href, 'mapy.cz/?x=')]")
 
-            targetFile.write(apartment_info)
-            targetFile.write("\n")
+        img_links = set()
+        for img in img_results:
+            img_link = img.get_attribute('src')
+            if img_link is not None:
+                # print("image src: ", img_link)
+                img_links.add(img_link)
 
-    targetFile.close()
+        map_links = []
+        for m in map_results:
+            map_link = m.get_attribute('href')
+            if map_link is not None:
+                map_links.append(map_link)
+
+        # print(map_links)
+        m_href = map_links[0]  # the location info in stored in the first one
+        longitude = get_coord_from_url(m_href, coord='x')
+        latitude = get_coord_from_url(m_href, coord='y')
+
+        i = 1
+        img_concat_names = ""  # this will be stored in the database
+        for img_link in img_links:
+            img_name = ad_id + "_" + str(i) + ".png"
+            urllib.request.urlretrieve(img_link, "images/" + img_name)
+            img_concat_names += ";" + img_name
+            i += 1
+
+        print("images: ", img_concat_names)
+
+        estate_info = driver.find_element(By.XPATH, "/html/body").text
+
+        # create the Apartment object, which prepares data for
+        # inserting into the database
+        estate = estates.Apartment(raw_data=estate_info)
+
+        time.sleep(5)
+
+        counter += 1
 
 
 if __name__ == '__main__':
@@ -124,6 +190,8 @@ if __name__ == '__main__':
 
     # get_all_ids(url_apartment, driver, n_pages)
     load_raw_data(driver)
+
+    driver.close()
 
 
 
