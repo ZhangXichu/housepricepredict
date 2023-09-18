@@ -26,9 +26,17 @@ def get_id_from_url(address):
 
 
 def get_all_ids(url_sub, driver, page_num):
+    """
+    function acquires all the links to the ads with there ids,
+    and writes those links in a txt file, one link per line
+    :param url_sub: url of the webpage of apartment info or house info
+    :param driver: browser driver object
+    :param page_num: total amount of pages the list of estate ads span
+    :return:None
+    """
     # get all the ids of the ads
 
-    out_file_name = "raw_lst.txt"
+    out_file_name = "raw.txt"
 
     # try:
     #     os.remove(out_file_name)
@@ -67,38 +75,34 @@ def get_all_ids(url_sub, driver, page_num):
 
     targetFile.close()
 
-'''
-for i in range(1, 5):
-    if i >= 2:
-        url = url_apartment + "?strana=" + str(i)
-    else:
-        url = url_apartment
-    driver.get(url)
 
-    print("address: " + url)
+def load_raw_data(driver):
+    out_file_name = "raw.txt"
 
-    # get all the links on a page
-    elements = driver.find_elements(By.TAG_NAME, "a")
-    links_apartments = []
-    for x in elements:
-        href = x.get_attribute('href')
-        if href is not None:
-            links_apartments.append(href)
+    try:
+        os.remove(out_file_name)
+    except OSError:
+        pass
 
-    # filter the links, leave only the links to the apartment specifications
-    apartment_links = list(filter(lambda link: "detail/prodej/byt/" in link, links_apartments))
-    # TODO: loop over all the links instead of only the first one
-    apartment_link1 = apartment_links[0]
+    file = open('raw_lst.txt', 'r')
 
-    driver.get(apartment_link1)
+    with codecs.open(out_file_name, "a", "utf-8") as targetFile:
+        while True:
+            ad_link = file.readline().strip()
+            if not ad_link:
+                break
 
-    # gets all the text from the page of details of a single real estate
-    apartment_info = driver.find_element(By.XPATH, "/html/body").text
+            print("link: " + ad_link)
 
-    with codecs.open("raw.txt", "a", "utf-8") as targetFile:
-        targetFile.write(apartment_info)
-        targetFile.write("\n")
-'''
+            # get all the links on a page
+            driver.get(ad_link)
+
+            apartment_info = driver.find_element(By.XPATH, "/html/body").text
+
+            targetFile.write(apartment_info)
+            targetFile.write("\n")
+
+    targetFile.close()
 
 
 if __name__ == '__main__':
@@ -119,6 +123,7 @@ if __name__ == '__main__':
     n_pages = floor(n_total / n_per_page)
 
     # get_all_ids(url_apartment, driver, n_pages)
+    load_raw_data(driver)
 
 
 

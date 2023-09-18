@@ -1,7 +1,7 @@
 import re
 from math import floor
 from scrapper import remove_spaces
-import parser as pr
+import estates as pr
 
 test_apartment_info = '''Česky
 Osobní menu
@@ -329,6 +329,7 @@ Změnit mapu
 '''
 from urllib.parse import urlparse
 import os
+import estates
 
 if __name__ == '__main__':
     # address = "https://www.sreality.cz/detail/prodej/byt/4+kk/praha-stodulky-melodicka/3513623884"
@@ -337,18 +338,29 @@ if __name__ == '__main__':
     # id_num = os.path.split(o.path)[1]
     # print(id_num)
 
-    print(pr.get_overall_price(test_specific))
-    print(pr.get_usable_area(test_specific))
-    print(pr.get_apartment_type(test_specific))
-    print(pr.get_floor(test_specific))
-    print(pr.get_building_state(test_specific))
-    print(pr.get_ownership(test_specific))
+    # print(pr.get_overall_price(test_specific))
+    # print(pr.get_usable_area(test_specific))
+    # print(pr.get_apartment_type(test_specific))
+    # print(pr.get_floor(test_specific))
+    # print(pr.get_building_state(test_specific))
+    # print(pr.get_ownership(test_specific))
+    #
+    # print(pr.check_loggia(test_specific))
+    # print(pr.get_loggia_area(test_specific))
+    #
+    # print(pr.check_basement(test_specific))
+    # print(pr.get_basement_area(test_specific))
+    #
+    # print(pr.dist_pub(test_specific))
 
-    print(pr.check_loggia(test_specific))
-    print(pr.get_loggia_area(test_specific))
+    file = open('test.txt', 'r')
+    while True:
+        line = file.readline()
+        if not line:
+            break
+        print(line.strip())
 
-    print(pr.check_basement(test_specific))
-    print(pr.get_basement_area(test_specific))
+    ap = estates.Apartment(test_specific)
 
-    print(pr.dist_pub(test_specific))
+    print(ap.usable_area)
 
