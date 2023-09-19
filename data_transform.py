@@ -30,7 +30,7 @@ building_state VARCHAR(255),
 ownership VARCHAR(255),
 images VARCHAR(5000)); '''
 
-sql_insert = ''' INSERT INTO
+sql_insert = ''' INSERT IGNORE INTO
 apartment(id, overall_price, usable_area, loggia_area, basement_area, dist_pub, dist_bus, dist_atm, dist_train,
           dist_tram, dist_shop, dist_rest, longitude, latitude, has_loggia,
 has_basement, near_pub, near_atm, near_bus, near_train, near_tram, near_shop, near_rest, apartment_type, building_state, ownership, images) 
