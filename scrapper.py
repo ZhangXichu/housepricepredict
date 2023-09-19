@@ -140,7 +140,7 @@ def load_raw_data(driver):
 
     for i, ad_link in enumerate(file):
 
-        if i >= 1881:
+        if i >= 2304:
             ad_id = get_id_from_url(ad_link)
             print("line numbr: " + str(i))
             print("ad_id: " + ad_id)
