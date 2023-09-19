@@ -1,6 +1,7 @@
 import re
 import numpy as np
 from scrapper import remove_spaces
+import sys
 
 
 class Estate:
@@ -62,7 +63,7 @@ class Estate:
         if distance:
             return True, float(re.findall(pattern, self.raw_data)[0])
         else:
-            return False, np.inf
+            return False, 1000000
 
     def get_numerical_value(self, context, is_float=True):
         """
