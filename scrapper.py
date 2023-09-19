@@ -15,6 +15,20 @@ from urllib.parse import urlparse
 import os
 import time
 import estates
+from data_transform import connect_to_db, sql_insert, sql_create
+
+
+def extract_digits(s):
+    """
+    function extracts all the digits from a string
+    :param s:
+    :return:
+    """
+    emp_str = ""
+    for m in s:
+        if m.isdigit():
+            emp_str = emp_str + m
+    return emp_str
 
 
 def remove_spaces(string):
@@ -34,6 +48,8 @@ def get_id_from_url(address):
 def get_coord_from_url(address, coord='x'):
     """
     function gets the x or y coordinate from a url
+    x -> longitude
+    y -> latitude
     :return: float
     """
     if coord == 'x':
@@ -117,58 +133,75 @@ def load_raw_data(driver):
 
     file = open('raw_lst.txt', 'r')
 
-    counter = 0
-    while counter <= 30:
-        ad_link = file.readline().strip()
-        if not ad_link:
-            break
+    db = connect_to_db()
+    cursor = db.cursor()
 
-        ad_id = get_id_from_url(ad_link)
-        print("ad_id: " + ad_id)
+    cursor.execute(sql_create)
 
-        # get all the links on a page
-        driver.get(ad_link)
-        img_results = driver.find_elements(By.XPATH, "//img[contains(@src, 'sreality.png')]")
+    for i, ad_link in enumerate(file):
 
-        map_results = driver.find_elements(By.XPATH, "//a[contains(@href, 'mapy.cz/?x=')]")
+        if i >= 1881:
+            ad_id = get_id_from_url(ad_link)
+            print("line numbr: " + str(i))
+            print("ad_id: " + ad_id)
 
-        img_links = set()
-        for img in img_results:
-            img_link = img.get_attribute('src')
-            if img_link is not None:
-                # print("image src: ", img_link)
-                img_links.add(img_link)
+            # get all the links on a page
+            driver.get(ad_link)
+            img_results = driver.find_elements(By.XPATH, "//img[contains(@src, 'sreality.png')]")
 
-        map_links = []
-        for m in map_results:
-            map_link = m.get_attribute('href')
-            if map_link is not None:
-                map_links.append(map_link)
+            map_results = driver.find_elements(By.XPATH, "//a[contains(@href, 'mapy.cz/?x=')]")
 
-        # print(map_links)
-        m_href = map_links[0]  # the location info in stored in the first one
-        longitude = get_coord_from_url(m_href, coord='x')
-        latitude = get_coord_from_url(m_href, coord='y')
+            img_links = set()
+            for img in img_results:
+                img_link = img.get_attribute('src')
+                if img_link is not None:
+                    # print("image src: ", img_link)
+                    img_links.add(img_link)
 
-        i = 1
-        img_concat_names = ""  # this will be stored in the database
-        for img_link in img_links:
-            img_name = ad_id + "_" + str(i) + ".png"
-            urllib.request.urlretrieve(img_link, "images/" + img_name)
-            img_concat_names += ";" + img_name
-            i += 1
+            map_links = []
+            for m in map_results:
+                map_link = m.get_attribute('href')
+                if map_link is not None:
+                    map_links.append(map_link)
 
-        print("images: ", img_concat_names)
+            # print(map_links)
+            m_href = map_links[0]  # the location info in stored in the first one
+            longitude = get_coord_from_url(m_href, coord='x')
+            latitude = get_coord_from_url(m_href, coord='y')
 
-        estate_info = driver.find_element(By.XPATH, "/html/body").text
+            i = 1
+            img_concat_names = ""  # this will be stored in the database
+            for img_link in img_links:
+                img_name = ad_id + "_" + str(i) + ".png"
+                urllib.request.urlretrieve(img_link, "images/" + img_name)
+                if i > 1:
+                    img_concat_names += ";" + img_name
+                else:
+                    img_concat_names += img_name
+                i += 1
 
-        # create the Apartment object, which prepares data for
-        # inserting into the database
-        estate = estates.Apartment(raw_data=estate_info)
+            # print("images: ", img_concat_names)
 
-        time.sleep(5)
+            estate_info = driver.find_element(By.XPATH, "/html/body").text
 
-        counter += 1
+            # create the Apartment object, which prepares data for
+            # inserting into the database
+            estate = estates.Apartment(raw_data=estate_info)
+
+            values = (ad_id, estate.overall_price, estate.usable_area, estate.loggia_area, estate.basement_area,
+                      estate.dist_pub, estate.dist_bus, estate.dist_atm, estate.dist_train, estate.dist_tram,
+                      estate.dist_shop, estate.dist_rest, longitude, latitude, estate.has_loggia, estate.has_basement,
+                      estate.near_pub, estate.near_atm, estate.near_bus, estate.near_train, estate.near_tram,
+                      estate.near_shop, estate.near_rest, estate.apartment_type, estate.building_state,
+                      estate.ownership, img_concat_names)
+
+            cursor.execute(sql_insert, values)
+            db.commit()
+
+            time.sleep(5)
+
+    file.close()
+    db.close()
 
 
 if __name__ == '__main__':
@@ -192,6 +225,3 @@ if __name__ == '__main__':
     load_raw_data(driver)
 
     driver.close()
-
-
-
