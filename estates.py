@@ -1,6 +1,6 @@
 import re
 import numpy as np
-from scrapper import remove_spaces
+from scrapper import remove_spaces, extract_digits
 import sys
 
 
@@ -76,7 +76,13 @@ class Estate:
         try:
             num_value_str = price_finder.group(1)
             if is_float:
-                num_value = float(remove_spaces(num_value_str))
+                num_value_str_strip = remove_spaces(num_value_str)
+                try:
+                    num_value = float(remove_spaces(num_value_str_strip))
+                except ValueError:
+                    # in case the string contains other symbols then digits
+                    num_value_str_strip = extract_digits(num_value_str_strip)
+                    num_value = float(remove_spaces(num_value_str_strip))
             else:
                 num_value = int(remove_spaces(num_value_str))
             return num_value
@@ -106,3 +112,6 @@ class Apartment(Estate):
     def __init__(self, raw_data):
         super().__init__(raw_data)
         self.floor = self.get_numerical_value(r'Podlaží: (.*). podlaží', is_float=False)
+
+
+
