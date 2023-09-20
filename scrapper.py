@@ -5,7 +5,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import httplib2
 import requests
-import mechanicalsoup
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.request import urlopen
 import re
@@ -86,7 +85,7 @@ def get_all_ids(url_sub, driver, page_num):
     #
     with codecs.open(out_file_name, "a", "utf-8") as targetFile:
 
-        for i in range(703, page_num):
+        for i in range(1, page_num):
             if i >= 2:
                 url = url_sub + "?strana=" + str(i)
             else:
@@ -140,7 +139,7 @@ def load_raw_data(driver):
 
     for i, ad_link in enumerate(file):
 
-        if i >= 2304:
+        if i >= 368:
             ad_id = get_id_from_url(ad_link)
             print("line numbr: " + str(i))
             print("ad_id: " + ad_id)
@@ -165,9 +164,13 @@ def load_raw_data(driver):
                     map_links.append(map_link)
 
             # print(map_links)
-            m_href = map_links[0]  # the location info in stored in the first one
-            longitude = get_coord_from_url(m_href, coord='x')
-            latitude = get_coord_from_url(m_href, coord='y')
+            if map_links:
+                m_href = map_links[0]  # the location info in stored in the first one
+                longitude = get_coord_from_url(m_href, coord='x')
+                latitude = get_coord_from_url(m_href, coord='y')
+            else:
+                longitude = 0
+                latitude = 0
 
             i = 1
             img_concat_names = ""  # this will be stored in the database
@@ -210,16 +213,19 @@ if __name__ == '__main__':
     url_apartment = root_url + "/hledani/prodej/byty"
     url_house = root_url + "/hledani/domy"
 
-    driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
 
     driver.get(url_apartment)
 
     # calculate number of pages
     apartments_lst_info = driver.find_element(By.XPATH, "/html/body").text
     n_per_page = 20
-    n_total = re.search(r'Zobrazujeme výsledky 1–20 z celkem (.*?) nalezených', apartments_lst_info).group(1)
-    n_total = int(remove_spaces(n_total))
-    n_pages = floor(n_total / n_per_page)
+    print(apartments_lst_info)
+    # n_total = re.search(r'Zobrazujeme výsledky 1–20 z celkem (.*?) nalezených', apartments_lst_info).group(1)
+    # n_total = int(remove_spaces(n_total))
+    # n_pages = floor(n_total / n_per_page)
+
+    n_pages = 20000 / n_per_page
 
     # get_all_ids(url_apartment, driver, n_pages)
     load_raw_data(driver)
