@@ -1,7 +1,12 @@
 # text files with data
 
+/ml/build
+/ml/soci.old
+/images
+/.vscode
 
-*.txt
+
+test.txt
 
 simple_test.py
 

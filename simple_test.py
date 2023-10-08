@@ -1,6 +1,5 @@
 import re
 from math import floor
-from scrapper import remove_spaces
 import estates as pr
 
 test_apartment_info = '''Česky
@@ -338,21 +337,6 @@ if __name__ == '__main__':
     # id_num = os.path.split(o.path)[1]
     # print(id_num)
 
-    # print(pr.get_overall_price(test_specific))
-    # print(pr.get_usable_area(test_specific))
-    # print(pr.get_apartment_type(test_specific))
-    # print(pr.get_floor(test_specific))
-    # print(pr.get_building_state(test_specific))
-    # print(pr.get_ownership(test_specific))
-    #
-    # print(pr.check_loggia(test_specific))
-    # print(pr.get_loggia_area(test_specific))
-    #
-    # print(pr.check_basement(test_specific))
-    # print(pr.get_basement_area(test_specific))
-    #
-    # print(pr.dist_pub(test_specific))
-
     file = open('test.txt', 'r')
     while True:
         line = file.readline()
@@ -363,4 +347,22 @@ if __name__ == '__main__':
     ap = estates.Apartment(test_specific)
 
     print(ap.usable_area)
+
+    print(ap.dist_pub, ap.near_pub)
+    print(ap.dist_atm, ap.near_atm)
+
+    # Open and read the file as a single buffer
+    fd = open('apartment.sql', 'r')
+    sqlFile = fd.read()
+    fd.close()
+
+    # all SQL commands (split on ';')
+    sqlCommands = sqlFile.split(';')
+
+    # Execute every command from the input file
+    for command in sqlCommands:
+        # This will skip and report errors
+        # For example, if the tables do not yet exist, this will skip over
+        # the DROP TABLE commands
+        print(command.strip()+";")
 

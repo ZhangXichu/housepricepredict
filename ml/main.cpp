@@ -1,12 +1,7 @@
-# include <iostream>
 # include <fstream>
-# include <string>
-# include <vector>
+# include "utils.h"
 # include "soci.h"
 # include "mysql/soci-mysql.h"
-
-using namespace std;
-using namespace soci;
 
 
 int main() {
@@ -17,51 +12,52 @@ int main() {
     const char* db_port = std::getenv("DB_PORT");
     const char* db_host = std::getenv("DB_HOST");
 
-    cout << "connect..." << endl;
+    std::cout << "connect..." << std::endl;
 
-    session sql;
+    soci::session sql;
 
     if (db_user && db_password && db_name && db_port) {
 
     
 
-    sql.open(mysql, "db=" + std::string(db_name) + 
+    sql.open(soci::mysql, "db=" + std::string(db_name) + 
                         " user=" + std::string(db_user) + 
                         " password=" + std::string(db_password) + 
                         " port=" + std::string(db_port) +
                         " host=" + std::string(db_host));
 
-    cout << "Successfully connected to db." << endl;
+    std::cout << "Successfully connected to db." << std::endl;
 }
 
     double price;
-    string image_name_concat;
-    indicator price_i, image_name_i;
+    std::string image_name_concat;
+    soci::indicator price_i, image_name_i;
 
-    statement st = (sql.prepare << "select overall_price, images from apartment", 
-                    into(price, price_i),
-                    into(image_name_concat, image_name_i));
+    soci::statement st = (sql.prepare << "select overall_price, images from apartment", 
+                    soci::into(price, price_i),
+                    soci::into(image_name_concat, image_name_i));
 
     st.execute();
 
-    vector<double> overall_prices;
-    vector<string> image_name_concats;
-    vector<indicator> price_is, image_name_is;
+    std::vector<double> overall_prices;
+    std::vector<std::string> image_name_concats;
 
     while(st.fetch()) {
         overall_prices.push_back(price);
         image_name_concats.push_back(image_name_concat);
 
-        if (price_i != i_null) {
-            cout << "Price: " << price << endl;
+        if (price_i != soci::i_null) {
+            std::cout << "Price: " << price << std::endl;
         }
-        cout << endl;
+        std::cout << std::endl;
 
-        if (image_name_i != i_null) {
-            cout << "Concated image names: " << image_name_concat << endl;
+        if (image_name_i != soci::i_null) {
+            std::cout << "Concated image names: " << image_name_concat << std::endl;
         }
-        cout << endl;
+        std::cout << std::endl;
     }
+
+    std::vector<std::string> image_names;
 
 
     return 0;

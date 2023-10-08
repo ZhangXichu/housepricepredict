@@ -3,6 +3,7 @@ import urllib.request
 from requests_html import HTMLSession
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service
 import httplib2
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
@@ -139,7 +140,7 @@ def load_raw_data(driver):
 
     for i, ad_link in enumerate(file):
 
-        if i >= 368:
+        if i >= 17514:
             ad_id = get_id_from_url(ad_link)
             print("line numbr: " + str(i))
             print("ad_id: " + ad_id)
@@ -213,7 +214,8 @@ if __name__ == '__main__':
     url_apartment = root_url + "/hledani/prodej/byty"
     url_house = root_url + "/hledani/domy"
 
-    driver = webdriver.Firefox()
+    service = Service(executable_path='./geckodriver')
+    driver = webdriver.Firefox(service=service)
 
     driver.get(url_apartment)
 
